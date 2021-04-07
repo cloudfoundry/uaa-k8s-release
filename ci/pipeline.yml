@@ -1,0 +1,124 @@
+groups:
+- jobs:
+  - run-k8s-template-tests
+  - idats
+  - deploy-uaa-to-acceptance-k8s
+  - bump-uaa-image-digest-for-k8s
+  name: uaa-acceptance
+- jobs:
+  - run-k8s-template-tests
+  - deploy-uaa-to-acceptance-k8s
+  - bump-uaa-image-digest-for-k8s
+  - deploy-acceptance-k8s-cluster
+  name: k8s
+jobs:
+- name: bump-uaa-image-digest-for-k8s
+  plan:
+  - in_parallel:
+      steps:
+      - get: uaa-k8s-release
+  - file: uaa-k8s-release/ci/tasks/bump-uaa-image-digest-for-k8s/task.yml
+    input_mapping:
+      uaa: uaa-k8s-release
+    task: bump-uaa-image-digest-for-k8s
+  - params:
+      rebase: true
+      repository: bumped-uaa
+    put: uaa-k8s-release
+- name: deploy-acceptance-k8s-cluster
+  plan:
+  - get: uaa-k8s-release
+  - file: uaa-k8s-release/ci/tasks/deploy-acceptance-k8s-cluster/task.yml
+    params:
+      GCP_REGION: ((gcp-region))
+      GCP_SERVICE_ACCOUNT_KEY: ((gcp-service-account-key))
+    task: deploy-acceptance-k8s-cluster
+  serial_groups:
+  - acceptance-k8s
+- name: deploy-uaa-to-acceptance-k8s
+  plan:
+  - in_parallel:
+      steps:
+      - get: uaa-k8s-release
+        passed:
+        - run-k8s-template-tests
+        trigger: true
+  - file: uaa-k8s-release/ci/tasks/deploy-uaa-to-acceptance-k8s/task.yml
+    input_mapping:
+      uaa: uaa-k8s-release
+    params:
+      GCP_REGION: ((gcp-region))
+      GCP_SERVICE_ACCOUNT_KEY: ((gcp-service-account-key))
+      SMTP_PASSWORD: ((sendgrid_staging_password))
+      UAA_ADMIN_CLIENT_SECRET: ((UAA_ADMIN_CLIENT_SECRET))
+    task: deploy-uaa-to-acceptance-k8s
+  serial_groups:
+  - acceptance-k8s
+- name: run-k8s-template-tests
+  plan:
+  - in_parallel:
+      steps:
+      - get: uaa-k8s-release
+        trigger: true
+  - file: uaa-k8s-release/ci/tasks/run-k8s-template-tests/task.yml
+    input_mapping:
+      uaa: uaa-k8s-release
+    task: run-k8s-template-tests
+- name: idats
+  plan:
+  - in_parallel:
+      steps:
+      - get: uaa-release
+      - get: uaa-k8s-release
+      - get: idats
+  - file: uaa-k8s-release/ci/tasks/get-credential/task.yml
+    output_mapping:
+      credential: admin-client-secret
+    params:
+      BBL_STATE_DIR: bbl-state/concourse/uaa-acceptance-gcp/state
+      CREDENTIAL_NAME: cf/uaa_admin_client_secret
+    task: get-credential-admin-client-secret
+  - file: uaa-k8s-release/ci/tasks/get-credential/task.yml
+    output_mapping:
+      credential: identity-client-secret
+    params:
+      BBL_STATE_DIR: bbl-state/concourse/uaa-acceptance-gcp/state
+      CREDENTIAL_NAME: cf/uaa_identity_client_secret
+    task: get-credential-identity-client-secret
+  - file: uaa-k8s-release/ci/tasks/get-credential/task.yml
+    output_mapping:
+      credential: mailinator-api-key
+    params:
+      BBL_STATE_DIR: bbl-state/concourse/uaa-acceptance-gcp/state
+      CREDENTIAL_NAME: cf/mailinator_api_key
+    task: get-credential-mailinator-api-key
+  - file: uaa-k8s-release/ci/tasks/idats/task.yml
+    params:
+      BASE_URL: login.uaa-acceptance.cf-app.com
+    task: idats
+  serial_groups:
+  - uaa-acceptance-gcp
+resource_types:
+- name: gcs-resource
+  source:
+    repository: frodenas/gcs-resource
+  type: docker-image
+resources:
+- name: idats
+  source:
+    branch: master
+    private_key: ((idats-private-key))
+    uri: git@github.com:cloudfoundry/cf-identity-acceptance-tests-release.git
+  type: git
+- name: uaa-release
+  source:
+    branch: develop
+    private_key: ((uaa-deploy-key))
+    uri: git@github.com:cloudfoundry/uaa.git
+  type: git
+- name: uaa-k8s-release
+  source:
+    branch: develop
+    private_key: ((uaa-deploy-key))
+    uri: git@github.com:cloudfoundry/uaa-k8s-release.git
+  type: git

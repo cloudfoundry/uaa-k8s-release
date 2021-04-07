@@ -1,0 +1,14 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: cfidentity/uaa-minimal
+inputs:
+- name: identity-ci
+- name: uaa
+- name: docker-image-cloudfoundry-uaa
+outputs:
+- name: bumped-uaa
+run:
+  path: identity-ci/shared/tasks/bump-uaa-image-digest-for-k8s/task.sh

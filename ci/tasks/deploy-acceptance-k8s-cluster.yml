@@ -1,0 +1,30 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cfidentity/uaa-k8s-ci
+
+params:
+  GCP_SERVICE_ACCOUNT_KEY: ~
+  GCP_REGION: ~
+
+run:
+  path: bash
+  args:
+  - -c
+  - |
+    #!/bin/bash
+    set -exu -o pipefail
+
+    gcloud auth activate-service-account --key-file=<(echo "${GCP_SERVICE_ACCOUNT_KEY}")
+    gcloud config set project cf-uaa-identity
+
+    export IP_ADDRESS_NAME=uaa-acceptance-k8s-ip
+
+    if ! gcloud compute addresses list | grep "${IP_ADDRESS_NAME}" > /dev/null; then
+      echo "Did not find reserved static IP address named ${IP_ADDRESS_NAME}; creating one"
+      gcloud compute addresses create "${IP_ADDRESS_NAME}" --global
+    fi
+
+    gcloud container clusters create uaa-acceptance --async --region "${GCP_REGION}"
