@@ -1,0 +1,3 @@
+#@data/values
+---
+image: "cloudfoundry/uaa@sha256:7fd48f08134e279a4fe2b8a200ecfdca8cda847175df38f1293e9818d7dd53cc"
