@@ -64,8 +64,8 @@ var _ = Describe("Deployment", func() {
 	BeforeEach(func() {
 		templates = []string{
 			pathToFile("deployment.yml"),
-			pathToFile(filepath.Join("values", "_values.yml")),
-			pathToFile(filepath.Join("values", "image.yml")),
+			pathToFile(filepath.Join("values", "_defaults.yml")),
+			pathToFile(filepath.Join("values", "images.yml")),
 			pathToFile(filepath.Join("values", "version.yml")),
 			pathToFile("deployment.star"),
 			"secrets/ca_certs.star=" + pathToFile(filepath.Join("secrets", "ca_certs.star")),
@@ -181,7 +181,7 @@ var _ = Describe("Deployment", func() {
 	It("Renders a custom image for the UAA", func() {
 		ctx := NewRenderingContext(templates...).WithData(
 			map[string]string{
-				"image":           "image from testing",
+				"images.uaa":      "image from testing",
 				"database.scheme": "hsqldb",
 			})
 

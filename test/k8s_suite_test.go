@@ -18,7 +18,7 @@ func init() {
 		panic("Could not initialize k8s_test package: can't find location of this file")
 	}
 
-	relative := filepath.Join(filepath.Dir(filename), "..", "templates")
+	relative := filepath.Join(filepath.Dir(filename), "..", "config")
 	abs, err := filepath.Abs(relative)
 	if err != nil {
 		panic(fmt.Sprintf("Could not initialize k8s_test package: %v", err))

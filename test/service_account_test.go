@@ -1,10 +1,11 @@
 package k8s_test
 
 import (
+	"path/filepath"
+
 	. "github.com/cloudfoundry/uaa/matchers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"path/filepath"
 )
 
 var _ = Describe("Service Account", func() {
@@ -13,7 +14,7 @@ var _ = Describe("Service Account", func() {
 	BeforeEach(func() {
 		templates = []string{
 			pathToFile("service_account.yml"),
-			pathToFile(filepath.Join("values", "_values.yml")),
+			pathToFile(filepath.Join("values", "_defaults.yml")),
 			pathToFile(filepath.Join("values", "version.yml")),
 		}
 	})

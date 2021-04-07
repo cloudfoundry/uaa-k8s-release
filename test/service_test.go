@@ -1,10 +1,11 @@
 package k8s_test
 
 import (
+	"path/filepath"
+
 	. "github.com/cloudfoundry/uaa/matchers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"path/filepath"
 )
 
 var _ = Describe("Service", func() {
@@ -18,7 +19,7 @@ var _ = Describe("Service", func() {
 
 	It("Renders common labels", func() {
 		templates = append(templates, pathToFile("metadata.yml"))
-		templates = append(templates, pathToFile(filepath.Join("values", "_values.yml")))
+		templates = append(templates, pathToFile(filepath.Join("values", "_defaults.yml")))
 		ctx := NewRenderingContext(templates...).WithData(map[string]string{
 			"version": "version for service metadata label",
 		})

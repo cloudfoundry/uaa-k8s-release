@@ -1,10 +1,11 @@
 package k8s_test
 
 import (
+	"path/filepath"
+
 	. "github.com/cloudfoundry/uaa/matchers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"path/filepath"
 )
 
 var _ = Describe("Secrets", func() {
@@ -14,7 +15,7 @@ var _ = Describe("Secrets", func() {
 	Context("SMTP Credentials", func() {
 		It("Renders with SMTP credentials", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "smtp_credentials.yml")),
 			}
 
@@ -38,7 +39,7 @@ var _ = Describe("Secrets", func() {
 
 		It("Does not render with empty SMTP credentials", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "smtp_credentials.yml")),
 			}
 
@@ -51,7 +52,7 @@ var _ = Describe("Secrets", func() {
 	Context("Database Credentials", func() {
 		It("Renders with Database credentials", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "database_credentials.yml")),
 			}
 
@@ -75,7 +76,7 @@ var _ = Describe("Secrets", func() {
 
 		It("Renders with Different Database credentials", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "database_credentials.yml")),
 			}
 
@@ -99,7 +100,7 @@ var _ = Describe("Secrets", func() {
 
 		It("Does Not Render with Missing Database credentials", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "database_credentials.yml")),
 			}
 
@@ -116,7 +117,7 @@ var _ = Describe("Secrets", func() {
 	Context("Admin Client Credentials", func() {
 		It("Renders with admin client credentials", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "admin_client_credentials.yml")),
 			}
 
@@ -140,7 +141,7 @@ var _ = Describe("Secrets", func() {
 
 		It("Admin client credentials are required", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "admin_client_credentials.yml")),
 			}
 
@@ -155,7 +156,7 @@ var _ = Describe("Secrets", func() {
 	Context("JWT Policy Signing Keys", func() {
 		It("Renders into secret", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "signing-key-fixture1.yml")),
@@ -181,7 +182,7 @@ var _ = Describe("Secrets", func() {
 
 		It("Renders into secret with different values", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "signing-key-fixture2.yml")),
@@ -214,7 +215,7 @@ var _ = Describe("Secrets", func() {
 
 		It("activeKeyId is required", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.star")),
 			}
@@ -228,7 +229,7 @@ var _ = Describe("Secrets", func() {
 
 		It("activeKeyId must be present in keys", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "signing-key-fixture-missing-active-key-id1.yml")),
@@ -243,7 +244,7 @@ var _ = Describe("Secrets", func() {
 
 		It("keys must be an object", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.yml")),
 				pathToFile(filepath.Join("secrets", "jwt_policy_signing_keys.star")),
 			}
@@ -262,7 +263,7 @@ var _ = Describe("Secrets", func() {
 	Context("CA Certs", func() {
 		It("Renders when CA Certs are present", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "ca_certs.yml")),
 				pathToFile(filepath.Join("secrets", "ca_certs.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "ca_certs.yml")),
@@ -295,7 +296,7 @@ cert`
 
 		It("Does not render when CA Certs are empty", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "ca_certs.yml")),
 				pathToFile(filepath.Join("secrets", "ca_certs.star")),
 			}
@@ -309,7 +310,7 @@ cert`
 	Context("SAML Keys", func() {
 		It("Renders into secrets", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "saml_keys_fixtures1.yml")),
@@ -335,7 +336,7 @@ cert`
 
 		It("Renders into secret with different values", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "saml_keys_fixtures2.yml")),
@@ -362,7 +363,7 @@ cert`
 
 		It("Requires an activeKeyId entry", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "saml_keys_fixtures_missing_active_key_id_entry.yml")),
@@ -376,7 +377,7 @@ cert`
 
 		It("Requires a value for activeKeyId", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "saml_keys_fixtures_no_key_set_as_active_key_id.yml")),
@@ -390,7 +391,7 @@ cert`
 
 		It("activeKeyId must be found in the list of keys", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "saml_keys_fixtures_unmatched_active_key_id.yml")),
@@ -405,7 +406,7 @@ cert`
 
 		It("keys must be an object", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.yml")),
 				pathToFile(filepath.Join("secrets", "saml_keys.star")),
 			}
@@ -426,7 +427,7 @@ cert`
 			templates = []string{
 				pathToFile(filepath.Join("secrets", "encryption_keys.yml")),
 				pathToFile(filepath.Join("secrets", "encryption_keys.star")),
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("..", "test_fixtures", "encryption_keys_fixtures.yml")),
 			}
 
@@ -447,7 +448,7 @@ cert`
 
 		It("Requires an active_key_label entry", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "encryption_keys.yml")),
 				pathToFile(filepath.Join("secrets", "encryption_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "encryption_keys_fixtures_no_active_key.yml")),
@@ -461,7 +462,7 @@ cert`
 
 		It("Requires a nonempty active_key_label entry", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "encryption_keys.yml")),
 				pathToFile(filepath.Join("secrets", "encryption_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "encryption_keys_fixtures_empty_key.yml")),
@@ -475,7 +476,7 @@ cert`
 
 		It("active_key_label must be found in the list of keys", func() {
 			templates = []string{
-				pathToFile(filepath.Join("values", "_values.yml")),
+				pathToFile(filepath.Join("values", "_defaults.yml")),
 				pathToFile(filepath.Join("secrets", "encryption_keys.yml")),
 				pathToFile(filepath.Join("secrets", "encryption_keys.star")),
 				pathToFile(filepath.Join("..", "test_fixtures", "encryption_keys_invalid_key_fixtures.yml")),

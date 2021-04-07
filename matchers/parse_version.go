@@ -1,9 +1,10 @@
 package matchers
 
 import (
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+
+	"gopkg.in/yaml.v2"
 )
 
 type version struct {
@@ -11,7 +12,7 @@ type version struct {
 }
 
 func LoadVersionFromValues() string {
-	content, err := ioutil.ReadFile("../templates/values/version.yml")
+	content, err := ioutil.ReadFile("../config/values/version.yml")
 
 	if err != nil {
 		log.Fatal(err)

@@ -19,7 +19,7 @@ var _ = Describe("Uaa ConfigMap", func() {
 		templates = []string{
 			pathToFile("config.yml"),
 			pathToFile("uaa.lib.yml"),
-			pathToFile(filepath.Join("values", "_values.yml")),
+			pathToFile(filepath.Join("values", "_defaults.yml")),
 			pathToFile("log4j2.properties"),
 		}
 	})

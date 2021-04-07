@@ -1,10 +1,11 @@
 package k8s_test
 
 import (
+	"path/filepath"
+
 	. "github.com/cloudfoundry/uaa/matchers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"path/filepath"
 )
 
 var _ = Describe("Metadata", func() {
@@ -20,7 +21,8 @@ var _ = Describe("Metadata", func() {
 		templates = append(templates, pathToFile("deployment.yml"))
 		templates = append(templates, pathToFile("deployment.star"))
 		templates = append(templates, "secrets/ca_certs.star="+pathToFile(filepath.Join("secrets", "ca_certs.star")))
-		templates = append(templates, pathToFile(filepath.Join("values", "_values.yml")))
+		templates = append(templates, pathToFile(filepath.Join("values", "_defaults.yml")))
+		templates = append(templates, pathToFile(filepath.Join("values", "images.yml")))
 		ctx := NewRenderingContext(templates...).WithData(map[string]string{
 			"labels.instance":  "instance-from-test",
 			"labels.partOf":    "partOf-from-test",
