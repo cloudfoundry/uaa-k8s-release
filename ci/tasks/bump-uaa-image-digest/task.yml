@@ -1,0 +1,20 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/cf-for-k8s-ci
+
+inputs:
+  - name: uaa-k8s-release
+  - name: uaa-docker-image
+
+outputs:
+  - name: updated-uaa-k8s-release
+
+params:
+  GIT_COMMIT_EMAIL: cf-release-integration@pivotal.io
+  GIT_COMMIT_USERNAME: "relint-ci"
+
+run:
+  path: uaa-k8s-release/ci/tasks/bump-uaa-image-digest/task.sh

@@ -2,6 +2,6 @@
 
 set -eux
 
-pushd uaa/k8s
+pushd uaa-k8s-release/
     make test
 popd

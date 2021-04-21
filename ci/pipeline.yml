@@ -1,124 +1,226 @@
-groups:
-- jobs:
-  - run-k8s-template-tests
-  - idats
-  - deploy-uaa-to-acceptance-k8s
-  - bump-uaa-image-digest-for-k8s
-  name: uaa-acceptance
-- jobs:
-  - run-k8s-template-tests
-  - deploy-uaa-to-acceptance-k8s
-  - bump-uaa-image-digest-for-k8s
-  - deploy-acceptance-k8s-cluster
-  name: k8s
+resources:
+- name: cf-for-k8s
+  type: git
+  source:
+    # TODO change back to develop
+    # branch: develop
+    branch: 177656349-ci-pipeline
+    private_key: ((cf_for_k8s_readonly_deploy_key.private_key))
+    uri: git@github.com:cloudfoundry/cf-for-k8s.git
+    ignore_paths:
+      - ci
+
+- name: cf-for-k8s-ci
+  type: git
+  source:
+    # TODO change back to develop
+    # branch: develop
+    branch: 177656349-ci-pipeline
+    private_key: ((cf_for_k8s_readonly_deploy_key.private_key))
+    uri: git@github.com:cloudfoundry/cf-for-k8s.git
+
+- name: uaa-k8s-release
+  type: git
+  source:
+    # TODO change me back later
+    # branch: main
+    branch: 177656349-ci-pipeline
+    private_key: ((uaa-k8s-release-read-write.private_key))
+    uri: git@github.com:cloudfoundry/uaa-k8s-release.git
+
+- name: uaa-k8s-release-ci-passed
+  type: git
+  source:
+    # TODO change me back later
+    # branch: ci-passed
+    branch: 177656349-ci-pipeline-ci-passed
+    private_key: ((uaa-k8s-release-read-write.private_key))
+    uri: git@github.com:cloudfoundry/uaa-k8s-release.git
+
+- name: uaa-k8s-release-except-images
+  type: git
+  check_every: 2m
+  source:
+    # TODO change me back later
+    # branch: main
+    branch: 177656349-ci-pipeline
+    private_key: ((uaa-k8s-release-read-write.private_key))
+    uri: git@github.com:cloudfoundry/uaa-k8s-release.git
+    ignore_paths: [config/values/images.yml]
+
+- name: uaa-github-release
+  type: github-release
+  source:
+    owner: cloudfoundry
+    repository: uaa
+    access_token: ((cf_for_k8s_release_bot_access_token))
+
+- name: uaa-docker-image
+  type: registry-image
+  source:
+    repository: cloudfoundry/uaa
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+    tag: cf-for-k8s-ci-build
+
+- name: ready-pool
+  type: pool
+  icon: pool
+  source:
+    uri: git@github.com:cloudfoundry/relint-ci-pools
+    branch: main
+    pool: k8s-dev/ready
+    private_key: ((relint_ci_pools_readwrite_deploy_key.private_key))
+
+- name: destroy-pool
+  type: pool
+  icon: pool
+  source:
+    uri: git@github.com:cloudfoundry/relint-ci-pools
+    branch: main
+    pool: k8s-dev/destroy
+    private_key: ((relint_ci_pools_readwrite_deploy_key.private_key))
+
 jobs:
-- name: bump-uaa-image-digest-for-k8s
-  plan:
-  - in_parallel:
-      steps:
-      - get: uaa-k8s-release
-  - file: uaa-k8s-release/ci/tasks/bump-uaa-image-digest-for-k8s/task.yml
-    input_mapping:
-      uaa: uaa-k8s-release
-    task: bump-uaa-image-digest-for-k8s
-  - params:
-      rebase: true
-      repository: bumped-uaa
-    put: uaa-k8s-release
-- name: deploy-acceptance-k8s-cluster
-  plan:
-  - get: uaa-k8s-release
-  - file: uaa-k8s-release/ci/tasks/deploy-acceptance-k8s-cluster/task.yml
-    params:
-      GCP_REGION: ((gcp-region))
-      GCP_SERVICE_ACCOUNT_KEY: ((gcp-service-account-key))
-    task: deploy-acceptance-k8s-cluster
-  serial_groups:
-  - acceptance-k8s
-- name: deploy-uaa-to-acceptance-k8s
-  plan:
-  - in_parallel:
-      steps:
-      - get: uaa-k8s-release
-        passed:
-        - run-k8s-template-tests
-        trigger: true
-  - file: uaa-k8s-release/ci/tasks/deploy-uaa-to-acceptance-k8s/task.yml
-    input_mapping:
-      uaa: uaa-k8s-release
-    params:
-      GCP_REGION: ((gcp-region))
-      GCP_SERVICE_ACCOUNT_KEY: ((gcp-service-account-key))
-      SMTP_PASSWORD: ((sendgrid_staging_password))
-      UAA_ADMIN_CLIENT_SECRET: ((UAA_ADMIN_CLIENT_SECRET))
-    task: deploy-uaa-to-acceptance-k8s
-  serial_groups:
-  - acceptance-k8s
 - name: run-k8s-template-tests
   plan:
-  - in_parallel:
-      steps:
-      - get: uaa-k8s-release
-        trigger: true
-  - file: uaa-k8s-release/ci/tasks/run-k8s-template-tests/task.yml
-    input_mapping:
-      uaa: uaa-k8s-release
-    task: run-k8s-template-tests
-- name: idats
+  - get: uaa-k8s-release
+    trigger: true
+  - task: run-k8s-template-tests
+    file: uaa-k8s-release/ci/tasks/run-k8s-template-tests.yml
+
+- name: build-uaa-image
   plan:
   - in_parallel:
-      steps:
-      - get: uaa-release
+    - get: cf-for-k8s
+    - get: uaa-github-release
+      params:
+        include_source_tarball: true
+    - get: uaa-k8s-release
+
+  - task: build-image
+    privileged: true
+    file: uaa-k8s-release/ci/tasks/build-uaa-image/task.yml
+
+  - put: uaa-docker-image
+    params:
+      image: kbld-output/image.tar
+      additional_tags: uaa-github-release/version
+
+## Install CF
+- name: verify-uaa-image
+  public: true
+  plan:
+    - in_parallel:
+        - get: uaa-k8s-release-except-images
+          trigger: true
+        - get: uaa-k8s-release
+        - get: cf-for-k8s-ci
+        - get: cf-for-k8s
+          trigger: true
+        - get: uaa-docker-image
+          trigger: true
+          passed: [build-uaa-image]
+
+    - put: ready-pool
+      params:
+        acquire: true
+
+    - task: display-cluster-info
+      file: cf-for-k8s-ci/ci/tasks/display-gke-cluster-info/task.yml
+      input_mapping:
+        pool-lock: ready-pool
+      params:
+        GCP_PROJECT_NAME: ((ci_k8s_gcp_project_name))
+        GCP_PROJECT_ZONE: ((ci_k8s_gcp_project_zone))
+        GCP_SERVICE_ACCOUNT_JSON: ((ci_k8s_gcp_service_account_json))
+    # TODO: make a file for this task?
+
+    - task: bump-uaa-k8s-release-image-ref
+      file: uaa-k8s-release/ci/tasks/bump-uaa-image-digest/task.yml
+
+    - task: bump-uaa-k8s-release-in-cf-for-k8s
+      input_mapping:
+        uaa-k8s-release: updated-uaa-k8s-release
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: cloudfoundry/cf-for-k8s-ci
+        inputs:
+          - name: cf-for-k8s
+          - name: uaa-k8s-release
+        outputs:
+          - name: updated-cf-for-k8s
+        run:
+          path: /bin/bash
+          args:
+            - -c
+            - |
+              set -euo pipefail
+
+              pushd cf-for-k8s
+                vendir sync -d config/uaa/_ytt_lib/uaa-k8s-release="../uaa-k8s-release"
+              popd
+
+              cp -r cf-for-k8s/* updated-cf-for-k8s/
+
+    - task: install-cf
+      file: cf-for-k8s-ci/ci/tasks/install-cf-on-gke/task.yml
+      input_mapping:
+        pool-lock: ready-pool
+        cf-for-k8s: updated-cf-for-k8s
+      params:
+        GCP_SERVICE_ACCOUNT_JSON: ((ci_k8s_gcp_service_account_json))
+        GCP_PROJECT_NAME: ((ci_k8s_gcp_project_name))
+        GCP_PROJECT_ZONE: ((ci_k8s_gcp_project_zone))
+        APP_REGISTRY_HOSTNAME: https://index.docker.io/v1/
+        APP_REGISTRY_REPOSITORY_PREFIX: ((cf_for_k8s_private_dockerhub.username))
+        APP_REGISTRY_USERNAME: ((cf_for_k8s_private_dockerhub.username))
+        APP_REGISTRY_PASSWORD: ((cf_for_k8s_private_dockerhub.password))
+        DOMAIN: k8s-dev.relint.rocks
+
+    - task: run-smoke-tests
+      file: cf-for-k8s-ci/ci/tasks/run-smoke-tests/task.yml
+      attempts: 2
+      params:
+        SMOKE_TEST_SKIP_SSL: false
+
+  on_success:
+    do:
+      - task: delete-cf
+        file: cf-for-k8s-ci/ci/tasks/delete-cf/task.yml
+        input_mapping:
+          pool-lock: ready-pool
+        params:
+          GCP_PROJECT_NAME: ((ci_k8s_gcp_project_name))
+          GCP_PROJECT_ZONE: ((ci_k8s_gcp_project_zone))
+          GCP_SERVICE_ACCOUNT_JSON: ((ci_k8s_gcp_service_account_json))
+      - put: destroy-pool
+        params:
+          add: ready-pool
+      - put: ready-pool
+        params:
+          remove: ready-pool
+
+- name: bump-image-in-uaa-k8s-release
+  serial: true
+  plan:
+    - in_parallel:
       - get: uaa-k8s-release
-      - get: idats
-  - file: uaa-k8s-release/ci/tasks/get-credential/task.yml
-    output_mapping:
-      credential: admin-client-secret
-    params:
-      BBL_STATE_DIR: bbl-state/concourse/uaa-acceptance-gcp/state
-      CREDENTIAL_NAME: cf/uaa_admin_client_secret
-    task: get-credential-admin-client-secret
-  - file: uaa-k8s-release/ci/tasks/get-credential/task.yml
-    output_mapping:
-      credential: identity-client-secret
-    params:
-      BBL_STATE_DIR: bbl-state/concourse/uaa-acceptance-gcp/state
-      CREDENTIAL_NAME: cf/uaa_identity_client_secret
-    task: get-credential-identity-client-secret
-  - file: uaa-k8s-release/ci/tasks/get-credential/task.yml
-    output_mapping:
-      credential: mailinator-api-key
-    params:
-      BBL_STATE_DIR: bbl-state/concourse/uaa-acceptance-gcp/state
-      CREDENTIAL_NAME: cf/mailinator_api_key
-    task: get-credential-mailinator-api-key
-  - file: uaa-k8s-release/ci/tasks/idats/task.yml
-    params:
-      BASE_URL: login.uaa-acceptance.cf-app.com
-    task: idats
-  serial_groups:
-  - uaa-acceptance-gcp
-resource_types:
-- name: gcs-resource
-  source:
-    repository: frodenas/gcs-resource
-  type: docker-image
-resources:
-- name: idats
-  source:
-    branch: master
-    private_key: ((idats-private-key))
-    uri: git@github.com:cloudfoundry/cf-identity-acceptance-tests-release.git
-  type: git
-- name: uaa-release
-  source:
-    branch: develop
-    private_key: ((uaa-deploy-key))
-    uri: git@github.com:cloudfoundry/uaa.git
-  type: git
-- name: uaa-k8s-release
-  source:
-    branch: develop
-    private_key: ((uaa-deploy-key))
-    uri: git@github.com:cloudfoundry/uaa-k8s-release.git
-  type: git
+      - get: uaa-docker-image
+        trigger: true
+        passed: [verify-uaa-image]
+
+    - task: bump-uaa-k8s-release-image-ref
+      file: uaa-k8s-release/ci/tasks/bump-uaa-image-digest/task.yml
+
+    - put: uaa-k8s-release
+      params:
+        rebase: true
+        repository: updated-uaa-k8s-release
+
+    - put: uaa-k8s-release-ci-passed
+      params:
+        repository: updated-uaa-k8s-release

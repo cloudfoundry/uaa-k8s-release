@@ -1,0 +1,21 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/cf-for-k8s-dind
+
+params:
+  DOCKERHUB_USERNAME: ((dockerhub.username))
+  DOCKERHUB_PASSWORD: ((dockerhub.password))
+
+inputs:
+  - name: cf-for-k8s
+  - name: uaa-github-release
+  - name: uaa-k8s-release
+
+outputs:
+  - name: kbld-output
+
+run:
+  path: uaa-k8s-release/ci/tasks/build-uaa-image/task.sh
