@@ -88,7 +88,7 @@ jobs:
     trigger: true
   - get: uaa-k8s-release
   - task: run-k8s-template-tests
-    file: uaa-k8s-release/ci/tasks/run-k8s-template-tests.yml
+    file: uaa-k8s-release/ci/tasks/run-k8s-template-tests/task.yml
 
 - name: build-uaa-image
   plan:
@@ -109,7 +109,6 @@ jobs:
       image: kbld-output/image.tar
       additional_tags: uaa-github-release/version
 
-## Install CF
 - name: validate-uaa-k8s-release
   public: true
   plan:
@@ -135,7 +134,6 @@ jobs:
         GCP_PROJECT_NAME: ((ci_k8s_gcp_project_name))
         GCP_PROJECT_ZONE: ((ci_k8s_gcp_project_zone))
         GCP_SERVICE_ACCOUNT_JSON: ((ci_k8s_gcp_service_account_json))
-    # TODO: make a file for this task?
 
     - task: bump-uaa-k8s-release-image-ref
       file: uaa-k8s-release/ci/tasks/bump-uaa-image-digest/task.yml
