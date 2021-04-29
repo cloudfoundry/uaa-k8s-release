@@ -84,8 +84,9 @@ resources:
 jobs:
 - name: run-k8s-template-tests
   plan:
-  - get: uaa-k8s-release
+  - get: uaa-k8s-release-except-images
     trigger: true
+  - get: uaa-k8s-release
   - task: run-k8s-template-tests
     file: uaa-k8s-release/ci/tasks/run-k8s-template-tests.yml
 
@@ -94,6 +95,7 @@ jobs:
   - in_parallel:
     - get: cf-for-k8s
     - get: uaa-github-release
+      trigger: true
       params:
         include_source_tarball: true
     - get: uaa-k8s-release
@@ -108,19 +110,18 @@ jobs:
       additional_tags: uaa-github-release/version
 
 ## Install CF
-- name: verify-uaa-image
+- name: validate-uaa-k8s-release
   public: true
   plan:
     - in_parallel:
-        - get: uaa-k8s-release-except-images
-          trigger: true
         - get: uaa-k8s-release
-        - get: cf-for-k8s-ci
-        - get: cf-for-k8s
           trigger: true
+          passed: [ run-k8s-template-tests ]
         - get: uaa-docker-image
           trigger: true
           passed: [build-uaa-image]
+        - get: cf-for-k8s
+        - get: cf-for-k8s-ci
 
     - put: ready-pool
       params:
@@ -209,16 +210,18 @@ jobs:
   plan:
     - in_parallel:
       - get: uaa-k8s-release
+        trigger: true
+        passed: [validate-uaa-k8s-release]
       - get: uaa-docker-image
         trigger: true
-        passed: [verify-uaa-image]
+        passed: [validate-uaa-k8s-release]
 
     - task: bump-uaa-k8s-release-image-ref
       file: uaa-k8s-release/ci/tasks/bump-uaa-image-digest/task.yml
 
     - put: uaa-k8s-release
       params:
-        rebase: true
+        merge: true
         repository: updated-uaa-k8s-release
 
     - put: uaa-k8s-release-ci-passed
