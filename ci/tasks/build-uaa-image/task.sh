@@ -13,12 +13,13 @@ timeout 300 wait_for_docker
 mkdir -p sources/uaa
 tar xf uaa-github-release/source.tar.gz --directory sources/uaa --strip-components=1
 
-git_sha="$(cat uaa-github-release/commit_sha)"
+git_ref="$(cat uaa-github-release/commit_sha)"
 version="$(cat uaa-github-release/version)"
 kbld_config_values=$(cat <<EOF
 #@data/values
 ---
-git_sha: ${git_sha}
+git_ref: ${git_ref}
+git_url: https://github.com/cloudfoundry/uaa-k8s-release
 version: ${version}
 EOF
 )

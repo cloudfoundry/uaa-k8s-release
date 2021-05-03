@@ -2,9 +2,7 @@ resources:
 - name: cf-for-k8s
   type: git
   source:
-    # TODO change back to develop
-    # branch: develop
-    branch: 177656349-ci-pipeline
+    branch: develop
     private_key: ((cf_for_k8s_readonly_deploy_key.private_key))
     uri: git@github.com:cloudfoundry/cf-for-k8s.git
     ignore_paths:
@@ -13,9 +11,7 @@ resources:
 - name: cf-for-k8s-ci
   type: git
   source:
-    # TODO change back to develop
-    # branch: develop
-    branch: 177656349-ci-pipeline
+    branch: develop
     private_key: ((cf_for_k8s_readonly_deploy_key.private_key))
     uri: git@github.com:cloudfoundry/cf-for-k8s.git
 
@@ -37,9 +33,7 @@ resources:
   type: git
   check_every: 2m
   source:
-    # TODO change me back later
-    # branch: main
-    branch: 177656349-ci-pipeline
+    branch: main
     private_key: ((uaa-k8s-release-read-write.private_key))
     uri: git@github.com:cloudfoundry/uaa-k8s-release.git
     ignore_paths: [config/values/images.yml]
@@ -215,7 +209,7 @@ jobs:
 
     - put: uaa-k8s-release
       params:
-        merge: true
+        rebase: true
         repository: updated-uaa-k8s-release
 
     - put: uaa-k8s-release-ci-passed
