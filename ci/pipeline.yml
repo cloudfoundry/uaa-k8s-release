@@ -22,18 +22,14 @@ resources:
 - name: uaa-k8s-release
   type: git
   source:
-    # TODO change me back later
-    # branch: main
-    branch: 177656349-ci-pipeline
+    branch: main
     private_key: ((uaa-k8s-release-read-write.private_key))
     uri: git@github.com:cloudfoundry/uaa-k8s-release.git
 
 - name: uaa-k8s-release-ci-passed
   type: git
   source:
-    # TODO change me back later
-    # branch: ci-passed
-    branch: 177656349-ci-pipeline-ci-passed
+    branch: ci-passed
     private_key: ((uaa-k8s-release-read-write.private_key))
     uri: git@github.com:cloudfoundry/uaa-k8s-release.git
 
