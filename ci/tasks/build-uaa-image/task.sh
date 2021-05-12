@@ -19,7 +19,7 @@ kbld_config_values=$(cat <<EOF
 #@data/values
 ---
 git_ref: ${git_ref}
-git_url: https://github.com/cloudfoundry/uaa-k8s-release
+git_url: https://github.com/cloudfoundry/uaa
 version: ${version}
 EOF
 )
