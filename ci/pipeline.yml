@@ -53,6 +53,13 @@ resources:
     password: ((dockerhub.password))
     tag: cf-for-k8s-ci-build
 
+- name: statsd-exporter-docker-image
+  type: registry-image
+  source:
+    repository: cloudfoundry/statsd_exporter-cf-for-k8s
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
 - name: ready-pool
   type: pool
   icon: pool
@@ -109,6 +116,8 @@ jobs:
         - get: uaa-docker-image
           trigger: true
           passed: [build-uaa-image]
+        - get: statsd-exporter-docker-image
+          trigger: true
         - get: cf-for-k8s
         - get: cf-for-k8s-ci
 
@@ -201,6 +210,9 @@ jobs:
         trigger: true
         passed: [validate-uaa-k8s-release]
       - get: uaa-docker-image
+        trigger: true
+        passed: [validate-uaa-k8s-release]
+      - get: statsd-exporter-docker-image
         trigger: true
         passed: [validate-uaa-k8s-release]
 

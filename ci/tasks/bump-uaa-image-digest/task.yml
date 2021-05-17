@@ -8,6 +8,7 @@ image_resource:
 inputs:
   - name: uaa-k8s-release
   - name: uaa-docker-image
+  - name: statsd-exporter-docker-image
 
 outputs:
   - name: updated-uaa-k8s-release

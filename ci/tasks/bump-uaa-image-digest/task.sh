@@ -8,14 +8,19 @@ function get_image_digest_for_resource () {
 }
 
 UAA_IMAGE="cloudfoundry/uaa@$(get_image_digest_for_resource uaa-docker-image)"
+STATSD_EXPORTER_IMAGE="cloudfoundry/statsd_exporter-cf-for-k8s@$(get_image_digest_for_resource statsd-exporter-docker-image)"
 
 echo "Updating uaa image to digest: ${UAA_IMAGE}"
+echo "Updating statsd_exporter image to digest: ${STATSD_EXPORTER_IMAGE}"
 
 cat <<- EOF > "${PWD}/update-images.yml"
 ---
 - type: replace
   path: /images/uaa
   value: ${UAA_IMAGE}
+- type: replace
+  path: /images/statsd_exporter
+  value: ${STATSD_EXPORTER_IMAGE}
 EOF
 
 pushd "uaa-k8s-release"
