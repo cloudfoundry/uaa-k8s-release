@@ -1,0 +1,36 @@
+#@data/values
+---
+database:
+  url: uaa_db_url
+  scheme: mysql
+  username: uaa_db_username
+  #! The db password shared between UAA and the database.
+  password: uaadb_password
+#! The secret used for the UAA admin client.
+admin:
+  client_secret: uaaadminclientsecret
+#! JWT policy configuration
+jwt:
+  policy:
+    activeKeyId: "default_jwt_signing_key"
+    keys:
+      #@overlay/match missing_ok=True
+      default_jwt_signing_key:
+        signingKey: jwt_policy_signing_key
+#! Encyption key for encrypting data stored in the database
+encryption:
+  active_key_label: "default_encryption_key"
+  #@overlay/replace
+  encryption_keys:
+  - label: default_encryption_key
+    passphrase: encryption_key_passphrase
+#! Configuration for UAA's SAML provider
+login:
+  saml:
+    activeKeyId: default_saml_key
+    keys:
+      #@overlay/match missing_ok=True
+      default_saml_key:
+        key: login_service_provider_key
+        passphrase: login_service_provider_key_passphrase
+        certificate: login_service_provider_certificate
