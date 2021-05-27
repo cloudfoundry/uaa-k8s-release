@@ -18,7 +18,14 @@ resources:
 - name: uaa-k8s-release
   type: git
   source:
-    branch: main
+    branch: uaa-ci-use-kbld
+    private_key: ((uaa-k8s-release-read-write.private_key))
+    uri: git@github.com:cloudfoundry/uaa-k8s-release.git
+
+- name: uaa-k8s-release-ci
+  type: git
+  source:
+    branch: uaa-ci-use-kbld
     private_key: ((uaa-k8s-release-read-write.private_key))
     uri: git@github.com:cloudfoundry/uaa-k8s-release.git
 
@@ -91,13 +98,21 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-for-k8s
+    - get: uaa-k8s-release-ci
     - get: uaa-github-release
       trigger: true
-      params:
-        include_source_tarball: true
     - get: uaa-k8s-release
 
+  - task: bump-vendir
+    input_mapping:
+      component: uaa-k8s-release
+      github-release: uaa-github-release
+    # TODO: Should this be shared in cf-for-k8s?
+    file: uaa-k8s-release/ci/tasks/bump-vendir/task.yml
+
   - task: build-image
+    input_mapping:
+      uaa-k8s-release: updated-component
     privileged: true
     file: uaa-k8s-release/ci/tasks/build-uaa-image/task.yml
 
@@ -110,6 +125,8 @@ jobs:
   public: true
   plan:
     - in_parallel:
+        - get: uaa-github-release
+          passed: [build-uaa-image]
         - get: uaa-k8s-release
           trigger: true
           passed: [ run-k8s-template-tests ]
@@ -206,6 +223,8 @@ jobs:
   serial: true
   plan:
     - in_parallel:
+      - get: uaa-github-release
+        passed: [validate-uaa-k8s-release]
       - get: uaa-k8s-release
         trigger: true
         passed: [validate-uaa-k8s-release]

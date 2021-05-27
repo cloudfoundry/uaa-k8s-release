@@ -1,0 +1,17 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/cf-for-k8s-ci
+
+inputs:
+  - name: github-release
+  - name: uaa-k8s-release-ci
+  - name: component
+
+outputs:
+  - name: updated-component
+
+run:
+  path: uaa-k8s-release-ci/ci/tasks/bump-vendir/task.sh
