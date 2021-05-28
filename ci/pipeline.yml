@@ -233,6 +233,7 @@ jobs:
       - get: statsd-exporter-docker-image
         trigger: true
         passed: [validate-uaa-k8s-release]
+      - get: uaa-k8s-release-ci
 
     - task: bump-vendir
       input_mapping:
