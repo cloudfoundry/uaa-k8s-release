@@ -40,6 +40,8 @@ popd
 pushd "uaa-k8s-release"
 git config user.name "${GIT_COMMIT_USERNAME}"
 git config user.email "${GIT_COMMIT_EMAIL}"
+
+git add build/vendir.yml
 git add config/values/images.yml
 
 # dont make a commit if there aren't new images
