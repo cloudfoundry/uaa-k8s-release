@@ -2,10 +2,10 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Update UAA image reference in k8s deployment template to 75.0.0
-      sha: 1cc0557f10be15940d6fb9c10e7469b2412a8bca
+      commitTitle: 'Merge pull request #1566 from cloudfoundry/fix/passcodePromptForCli...'
+      sha: d1994992caa2320f1ff2e34cba63b6a713e6d675
       tags:
-      - v75.0.0
+      - v75.2.0
     path: .
   path: sources/uaa
 kind: LockConfig
