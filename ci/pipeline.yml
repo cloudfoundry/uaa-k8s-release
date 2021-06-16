@@ -88,9 +88,12 @@ resources:
 jobs:
 - name: run-k8s-template-tests
   plan:
-  - get: uaa-k8s-release-except-images
-    trigger: true
-  - get: uaa-k8s-release
+  - in_parallel:
+    - get: uaa-k8s-release-except-images
+      trigger: true
+    - get: uaa-k8s-release
+    - get: statsd-exporter-docker-image
+      trigger: true
   - task: run-k8s-template-tests
     file: uaa-k8s-release/ci/tasks/run-k8s-template-tests/task.yml
 
@@ -134,6 +137,7 @@ jobs:
           passed: [build-uaa-image]
         - get: statsd-exporter-docker-image
           trigger: true
+          passed: [ run-k8s-template-tests ]
         - get: cf-for-k8s
         - get: cf-for-k8s-ci
 
@@ -225,8 +229,6 @@ jobs:
       - get: uaa-github-release
         passed: [validate-uaa-k8s-release]
       - get: uaa-k8s-release
-        trigger: true
-        passed: [validate-uaa-k8s-release]
       - get: uaa-docker-image
         trigger: true
         passed: [validate-uaa-k8s-release]
