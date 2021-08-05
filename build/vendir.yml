@@ -8,4 +8,4 @@ directories:
   - path: .
     git:
       url: https://github.com/cloudfoundry/uaa.git
-      ref: v75.5.0
+      ref: v75.6.0
