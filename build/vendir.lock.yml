@@ -2,10 +2,10 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Update UAA image reference in k8s deployment template to 75.13.0
-      sha: b0a207a5a5967202bcc50a5788711be07afef89c
+      commitTitle: Update UAA image reference in k8s deployment template to 75.14.0
+      sha: af97f1c27bd8639b9531bfa567066f147510c654
       tags:
-      - v75.13.0
+      - v75.14.0
     path: .
   path: sources/uaa
 kind: LockConfig
